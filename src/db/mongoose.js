@@ -1,17 +1,20 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
-mongoose.connect("mongodb://127.0.0.1:27017/task-manager-api", {
-  useNewUrlParser: true,
-  useFindAndModify: false,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-});
+const connectToDb = () => {
+  try {
+    mongoose.connect(
+      "mongodb+srv://Raza909:Raza909@task-manager-app.nx81a.mongodb.net/task-manager-api?retryWrites=true&w=majority",
+      {
+        useNewUrlParser: true,
+        useFindAndModify: false,
+        useCreateIndex: true,
+      }
+    );
+    console.log("Connect To DataBase");
+  } catch (error) {
+    console.log(("Error", error));
+  }
+};
 
-const User = mongoose.model("User", {
-  name: {
-    type: String,
-  },
-  age: {
-    type: Number,
-  },
-});
+module.exports = connectToDb;
