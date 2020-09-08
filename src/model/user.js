@@ -62,6 +62,17 @@ userSchema.methods.generateAuthToken = async function () {
   return token;
 };
 
+//this toJSON is called when json.stringify is called and express called it behind scene so after that this func will call automatically and will return desired data
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+};
+
 //Hash Plane Text Password Before Saving
 userSchema.pre("save", async function (next) {
   const user = this;

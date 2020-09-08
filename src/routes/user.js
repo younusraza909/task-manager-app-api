@@ -20,7 +20,7 @@ router.post("/login", async (req, res) => {
     //Sending Token
 
     const token = await user.generateAuthToken();
-
+    //in res.send express call json.stringify behind the scene
     res.send({ user, token });
   } catch (error) {
     res.status(400).send();
