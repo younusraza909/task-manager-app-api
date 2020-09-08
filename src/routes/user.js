@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("./../model/user");
 const bcrypt = require("bcryptjs");
+const auth = require("../middleware/auth");
 
 //To Login User
 router.post("/login", async (req, res) => {
@@ -27,7 +28,7 @@ router.post("/login", async (req, res) => {
 });
 
 //For Fetching All Users
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
     const users = await User.find({});
 
