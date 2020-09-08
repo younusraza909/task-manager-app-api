@@ -27,17 +27,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
-//For Fetching All Users
-router.get("/", auth, async (req, res) => {
+//To LogOut User
+router.post("/logout", auth, async (req, res) => {
   try {
-    const users = await User.find({});
+    req.user.tokens = req.user.tokens.filter((token) => {
+      return token.token !== req.token;
+    });
 
-    res.status(200);
-    res.send(users);
+    await req.user.save();
+    res.send();
   } catch (error) {
-    res.status(400);
-    res.send(error);
+    res.status(500).send(console.error(error));
   }
+});
+
+//To Logout User From All Session
+router.post("/logoutAll", auth, async (req, res) => {
+  try {
+    req.user.tokens = [];
+
+    await req.user.save();
+    res.send("Logged Out Successfully");
+  } catch (error) {
+    res.status(500).send(console.error(error));
+  }
+});
+
+//For Fetching Current Users
+router.get("/me", auth, async (req, res) => {
+  res.send(req.user);
 });
 
 //For Fetching User With ID
