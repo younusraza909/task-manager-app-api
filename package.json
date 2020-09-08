@@ -1,5 +1,5 @@
 {
-  "name": "Task-Manager",
+  "name": "task-manager",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,9 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "express": "^4.17.1",
     "mongodb": "^3.1.10",
-    "mongoose": "^5.3.16",
+    "mongoose": "^5.10.3",
     "validator": "^10.9.0"
   },
   "devDependencies": {

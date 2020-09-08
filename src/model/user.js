@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
-const User = mongoose.model("User", {
+const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -20,6 +20,7 @@ const User = mongoose.model("User", {
     type: String,
     required: true,
     trim: true,
+    unique: true,
     lowercase: true,
     validate(value) {
       if (!validator.isEmail(value)) {
@@ -39,4 +40,13 @@ const User = mongoose.model("User", {
   },
 });
 
-module.exports = User;
+//Hash Plane Text Password Before Saving
+userSchema.pre("save", async function (next) {
+  const user = this;
+  if (user.isModified("password")) {
+    user.password = await bcrypt.hash(user.password, 8);
+  }
+  next();
+});
+
+module.exports = mongoose.model("User", userSchema);

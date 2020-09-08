@@ -1,6 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const User = require("./../model/user");
+const bcrypt = require("bcryptjs");
+
+//To SignUp User
+router.post("/login", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      res.status(400).send("Unable to login");
+    }
+
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
+
+    if (!isMatch) {
+      res.status(400).send("Unable to login");
+    }
+
+    res.send(user);
+  } catch (error) {
+    res.status(400).send();
+  }
+});
 
 //For Fetching All Users
 router.get("/", async (req, res) => {
@@ -59,10 +80,17 @@ router.patch("/:id", async (req, res) => {
     res.status(400).send("Error", "Invalid Updates");
   }
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const user = await User.findById(req.params.id);
+
+    updates.forEach((update) => (user[update] = req.body[update]));
+
+    await user.save();
+
+    //FindByIdAndUpdate bypasses mongoose thats wht will not hit middleware of mongoose
+    // const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    //   new: true,
+    //   runValidators: true,
+    // });
 
     if (!user) {
       res.status(404).send("No User Found With This ID");

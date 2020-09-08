@@ -47,7 +47,7 @@ router.post("/", async (req, res) => {
 });
 
 //Update Task By ID
-router.patch("/:id", (req, res) => {
+router.patch("/:id", async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["description", "completed"];
   const isValidOperation = updates.every((update) =>
@@ -55,16 +55,23 @@ router.patch("/:id", (req, res) => {
   );
 
   if (!isValidOperation) {
-    res.status(400).send("Invalid Updates");
+    res.status(400).send("Error", "Invalid Updates");
   }
   try {
-    const task = Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
+    const task = await Task.findById(req.params.id);
+    updates.forEach((update) => {
+      task[update] = req.body[update];
     });
 
+    await task.save();
+
+    // const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+    // new: true,
+    // runValidators: true,
+    // });
+
     if (!task) {
-      res.status(404).send("Task Not Found With This ID");
+      res.status(404).send("No task Found With This ID");
     }
     res.send(task);
   } catch (error) {
@@ -76,11 +83,13 @@ router.patch("/:id", (req, res) => {
 //Delete Task By Id
 router.delete("/:id", async (req, res) => {
   try {
-    const task = Task.findByIdAndDelete(req.params.id);
+    const task = await Task.findByIdAndDelete(req.params.id);
 
     if (!task) {
-      res.status(404).send("Task Not Found With Thid ID");
+      return res.status(404).send("No User Found");
     }
+
+    res.status(200);
     res.send(task);
   } catch (error) {
     res.status(400);

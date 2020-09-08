@@ -9,6 +9,7 @@ const connectToDb = () => {
         useNewUrlParser: true,
         useFindAndModify: false,
         useCreateIndex: true,
+        useUnifiedTopology: true,
       }
     );
     console.log("Connect To DataBase");
