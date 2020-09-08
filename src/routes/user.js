@@ -58,23 +58,6 @@ router.get("/me", auth, async (req, res) => {
   res.send(req.user);
 });
 
-//For Fetching User With ID
-router.get("/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).send("No User Found");
-    }
-
-    res.status(200);
-    res.send(user);
-  } catch (error) {
-    res.status(400);
-    res.send(error);
-  }
-});
-
 //TO Create A user
 router.post("/", async (req, res) => {
   const user = new User(req.body);
@@ -91,7 +74,7 @@ router.post("/", async (req, res) => {
 });
 
 //Update User
-router.patch("/:id", async (req, res) => {
+router.patch("/me", auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["name", "email", "password", "age"];
   const isValidOperation = updates.every((update) =>
@@ -102,8 +85,9 @@ router.patch("/:id", async (req, res) => {
     res.status(400).send("Error", "Invalid Updates");
   }
   try {
-    const user = await User.findById(req.params.id);
-
+    //Upodated Version
+    // const user = await User.findById(req.params.id);
+    const user = req.user;
     updates.forEach((update) => (user[update] = req.body[update]));
 
     await user.save();
@@ -114,9 +98,6 @@ router.patch("/:id", async (req, res) => {
     //   runValidators: true,
     // });
 
-    if (!user) {
-      res.status(404).send("No User Found With This ID");
-    }
     res.send(user);
   } catch (error) {
     res.status(400);
@@ -125,16 +106,18 @@ router.patch("/:id", async (req, res) => {
 });
 
 //Delete A User With ID
-router.delete("/:id", async (req, res) => {
+router.delete("/me", auth, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    // const user = await User.findByIdAndDelete(req.user._id);
 
-    if (!user) {
-      return res.status(404).send("No User Found");
-    }
+    // if (!user) {
+    //   return res.status(404).send("No User Found");
+    // }
+
+    await req.user.remove();
 
     res.status(200);
-    res.send(user);
+    res.send("user deleted successfully");
   } catch (error) {
     res.status(400);
     res.send(error);
