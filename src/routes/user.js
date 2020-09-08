@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("./../model/user");
 const bcrypt = require("bcryptjs");
 
-//To SignUp User
+//To Login User
 router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
@@ -16,8 +16,11 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       res.status(400).send("Unable to login");
     }
+    //Sending Token
 
-    res.send(user);
+    const token = await user.generateAuthToken();
+
+    res.send({ user, token });
   } catch (error) {
     res.status(400).send();
   }
@@ -55,16 +58,16 @@ router.get("/:id", async (req, res) => {
 
 //TO Create A user
 router.post("/", async (req, res) => {
+  const user = new User(req.body);
   try {
-    const user = new User(req.body);
-
     await user.save();
 
-    res.status(200);
-    res.send(user);
+    const token = await user.generateAuthToken();
+
+    res.status(201).send({ user, token });
   } catch (error) {
-    res.status(400);
-    res.send(error);
+    console.error(error);
+    res.status(400).send(error);
   }
 });
 
