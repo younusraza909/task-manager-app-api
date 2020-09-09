@@ -6,10 +6,17 @@ const auth = require("./../middleware/auth");
 //For Fetching All Task
 router.get("/", auth, async (req, res) => {
   const match = {};
+  const sort = {};
 
   if (req.query.completed) {
     match.completed = req.query.completed === "true";
   }
+
+  if (req.query.sortBy) {
+    const parts = req.query.sortBy.split(":");
+    sort[parts[0]] = parts[1] === "asc" ? 1 : -1;
+  }
+
   try {
     // const tasks = await Task.findMany({ owner: req.user._id });
 
@@ -20,14 +27,19 @@ router.get("/", auth, async (req, res) => {
       .populate({
         path: "tasks",
         match: match,
+        options: {
+          limit: parseInt(req.query.limit),
+          skip: parseInt(req.query.skip),
+          sort: sort,
+        },
       })
       .execPopulate();
 
-    res.status(200);
-    res.send(req.user.tasks);
+    res
+      .status(200)
+      .send({ total: req.user.tasks.length, tasks: req.user.tasks });
   } catch (error) {
-    res.status(400);
-    res.send(error);
+    res.status(400).send(error);
   }
 });
 
