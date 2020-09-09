@@ -5,10 +5,23 @@ const auth = require("./../middleware/auth");
 
 //For Fetching All Task
 router.get("/", auth, async (req, res) => {
+  const match = {};
+
+  if (req.query.completed) {
+    match.completed = req.query.completed === "true";
+  }
   try {
     // const tasks = await Task.findMany({ owner: req.user._id });
 
-    await req.user.populate("tasks").execPopulate();
+    // populate ask for more option we can pass to query data
+    // await req.user.populate("tasks").execPopulate();
+
+    await req.user
+      .populate({
+        path: "tasks",
+        match: match,
+      })
+      .execPopulate();
 
     res.status(200);
     res.send(req.user.tasks);
@@ -41,7 +54,7 @@ router.post("/", auth, async (req, res) => {
     // const task = new Task(req.body);
     const task = new Task({
       ...req.body,
-      owner: req.user,
+      owner: req.user._id,
     });
 
     await task.save();
