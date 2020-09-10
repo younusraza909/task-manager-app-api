@@ -4,6 +4,7 @@ const User = require("./../model/user");
 const bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
 const multer = require("multer");
+const sharp = require("sharp");
 
 //To Login User
 router.post("/login", async (req, res) => {
@@ -126,6 +127,7 @@ router.delete("/me", auth, async (req, res) => {
 });
 
 //To Get Images from User
+//PreProcessing
 const avatar = multer({
   // dest: "avatar",
   //we can save file to directory by adding dest property but it will not get access in route so we remove it so multer will give its access to routes
@@ -139,13 +141,18 @@ const avatar = multer({
     cb(undefined, true);
   },
 });
+//Route For Getting Image
 router.post(
   "/me/avatar",
   auth,
   avatar.single("avatar"),
   async (req, res) => {
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 250, height: 250 })
+      .png()
+      .toBuffer();
     //to get access to file buffer only available if dest not given in multer
-    req.user.avatar = req.file.buffer;
+    req.user.avatar = buffer;
     await req.user.save();
     res.send();
 
@@ -181,7 +188,7 @@ router.get("/:id/avatar", async (req, res) => {
 
     //Setting header to tell user  image type
     //usually we dont want to set it express set it for us but in image condition we have to
-    res.set("Content-Type", "image/jpg");
+    res.set("Content-Type", "image/png");
     res.send(user.avatar);
   } catch (error) {
     res.status(404).send();
