@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("./../model/user");
 const bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
+const multer = require("multer");
 
 //To Login User
 router.post("/login", async (req, res) => {
@@ -121,6 +122,69 @@ router.delete("/me", auth, async (req, res) => {
   } catch (error) {
     res.status(400);
     res.send(error);
+  }
+});
+
+//To Get Images from User
+const avatar = multer({
+  // dest: "avatar",
+  //we can save file to directory by adding dest property but it will not get access in route so we remove it so multer will give its access to routes
+  limits: {
+    fileSize: 1000000, //here 1 million is equal to 1mb
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      cb(new Error("File Should Be jpg,jpeg,png"));
+    }
+    cb(undefined, true);
+  },
+});
+router.post(
+  "/me/avatar",
+  auth,
+  avatar.single("avatar"),
+  async (req, res) => {
+    //to get access to file buffer only available if dest not given in multer
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.send();
+
+    //in order to use thi sbuffer in html
+    // <img src="data:image/jpg;base64,bufferString" />
+  },
+  (error, req, res, next) => {
+    res.status(400).send({ error: error.message });
+  }
+);
+
+//TO Delete avater for a user
+router.delete("/me/avatar", auth, async (req, res) => {
+  try {
+    req.user.avatar = undefined;
+
+    await req.user.save();
+
+    res.send(200);
+  } catch (error) {
+    res.status(400).send("Unable To Delete Avatar");
+  }
+});
+
+//For Fetching Avatar
+router.get("/:id/avatar", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user || !user.avatar) {
+      throw new Error();
+    }
+
+    //Setting header to tell user  image type
+    //usually we dont want to set it express set it for us but in image condition we have to
+    res.set("Content-Type", "image/jpg");
+    res.send(user.avatar);
+  } catch (error) {
+    res.status(404).send();
   }
 });
 
