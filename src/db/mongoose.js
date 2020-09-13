@@ -3,15 +3,12 @@ const validator = require("validator");
 
 const connectToDb = () => {
   try {
-    mongoose.connect(
-      "mongodb+srv://Raza909:Raza909@task-manager-app.nx81a.mongodb.net/task-manager-api?retryWrites=true&w=majority",
-      {
-        useNewUrlParser: true,
-        useFindAndModify: false,
-        useCreateIndex: true,
-        useUnifiedTopology: true,
-      }
-    );
+    mongoose.connect(process.env.MongoURI, {
+      useNewUrlParser: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+    });
     console.log("Connect To DataBase");
   } catch (error) {
     console.log(("Error", error));
